@@ -4,6 +4,7 @@ import SingInForm from "../components/registration/singIN"
 import Data from "../utils/navbar"
 import Sidebar from "../components/Sidebar"
 import PrivateRoutes from "./privateRoutes"
+import NotFound from "../components/NotFound"
 
 function Root() {
      return <div>
@@ -20,7 +21,7 @@ function Root() {
                <Route path="sign-up" element={<SingUpForm />} />
 
                <Route path="/" element={<Navigate to="/dashboard" />} />
-               <Route path="*" element={<h1> 404 Not found</h1>} />
+               <Route path="*" element={<NotFound/>} />
           </Routes>
      </div>
 
