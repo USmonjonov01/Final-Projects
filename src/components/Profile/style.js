@@ -11,7 +11,7 @@ import miniSecuritiyIcon from '../../assets/icons/miniSecuritiyIcon.svg?react'
 import profileIcon from '../../assets/icons/profileIcon.svg?react'
 import profileMinniIcon from "../../assets/icons/profileMinniIcon.svg?react"
 import QulfIcon from "../../assets/icons/QulfIcon.svg?react"
-import SettingsIcon from "../../assets/icons/Settingsicon.svg?react"
+import SettingsIcon from "../../assets/icons/SettingsIcon.svg?react"
 import topRightIcon from "../../assets/icons/topGreenIcon.svg?react"
 import UserIcon from "../../assets/icons/UserIcon.svg?react"
 import CrownIcon from '../../assets/icons/CrownIcon.svg?react'
