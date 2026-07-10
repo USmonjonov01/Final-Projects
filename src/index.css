@@ -11,6 +11,18 @@
 
 ;
 
-.wrapper::-webkit-scrollbar {
+.wrapper::-webkit-scrollbar, 
+.ScrollBar::-webkit-scrollbar {
+  display: none;
+}
+
+.ScrollBar_Dashboard::-webkit-scrollbar{
+  display: none;
+}
+
+.ScrollBar::-webkit-scrollbar{
+  display: none;
+}
+.ProfileCard::-webkit-scrollbar{
   display: none;
 }

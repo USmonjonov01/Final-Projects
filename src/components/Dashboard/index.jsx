@@ -1,196 +1,194 @@
+import { useEffect, useState } from "react";
+import { ThemeData } from "../../Context/Theme";
+import { useNotification } from "../../Context/Messages";
+import { StudentListData } from "../../Context/Users";
 import GenericProgress from "../Generics/Progress";
 import { Icons } from "../registration/singIN/style";
-import { Wrapper, Header, HeaderLeft, HeaderRight, Title, Subtitle, CardsGrid, StatCard, CardLabel, CardValue, CardSubText, ContentGrid, TransactionsCard, CategoriesCard, SectionHeader, TransactionsList, TransactionItem, TransactionIcon, TransactionInfo, TransactionTitle, TransactionCategory, TransactionAmount, TransactionDate, CategoryList, CategoryItem, CategoryTop, ProgressWrapper, ProgressBar, CardTop, } from "./style";
+import { Wrapper, Header, HeaderLeft, HeaderRight, Title, Subtitle, CardsGrid, StatCard, CardLabel, CardValue, CardSubText, ContentGrid, TransactionsCard, CategoriesCard, SectionHeader, TransactionsList, TransactionItem, TransactionIcon, TransactionInfo, TransactionTitle, TransactionCategory, TransactionAmount, TransactionDate, CardTop, } from "./style";
+import Axios from "../../axios";
 
-
+const api = import.meta.env.VITE_API;
 
 const Dashboard = () => {
-     return <Wrapper>
-          <Header>
-               <HeaderLeft>
-                    <Title>Dashboard</Title>
-                    <Subtitle>Xarajatlaringizni boshqaring</Subtitle>
-               </HeaderLeft>
+  const [{ isDark }] = ThemeData();
+  const { notify, destroyNotify } = useNotification();
+  const [{ List }] = StudentListData();
 
-               <HeaderRight>
-                    <Icons.DateIcon />
-                    <span>May 2026</span>
-               </HeaderRight>
-          </Header>
+  const userData = localStorage.getItem("userData");
 
-          <CardsGrid>
-               <StatCard>
-                    <CardTop>
-                         <CardLabel>Balans</CardLabel>
-                         <Icons.smallWalletIcon />
-                    </CardTop>
-                    <CardValue>2,760,000 so'm</CardValue>
-                    <CardSubText>Umumiy balans</CardSubText>
-               </StatCard>
+  const [transactions, setTransactions] = useState([]);
+  const [userId, setUserId] = useState(null);
 
-               <StatCard>
-                    <CardTop>
-                         <CardLabel>Daromad</CardLabel>
-                         <Icons.topGreenIcon />
-                    </CardTop>
-                    <CardValue className="income">
-                         5,000,000 so'm
-                    </CardValue>
-                    <CardSubText>Ushbu oy</CardSubText>
-               </StatCard>
 
-               <StatCard>
-                    <CardTop>
-                         <CardLabel>Xarajat</CardLabel>
-                         <Icons.bottomRedIcon />
-                    </CardTop>
-                    <CardValue className="expense">
-                         2,240,000 so'm
-                    </CardValue>
-                    <CardSubText>Ushbu oy</CardSubText>
-               </StatCard>
-          </CardsGrid>
+  useEffect(() => {
+    GetUserId();
+  }, []);
 
-          <ContentGrid>
-               <TransactionsCard>
-                    <SectionHeader>
-                         <h3>So'nggi tranzaksiyalar</h3>
+  useEffect(() => {
+    if (userId) GetTransactions(userId);
+  }, [userId]);
 
-                         <button>
-                              Barchasini ko'rish
-                         </button>
-                    </SectionHeader>
+  async function GetUserId() {
+    try {
+      const res = await Axios.get(api);
+      const user = res.data.find((obj) => obj?.ism === userData);
+      if (user) setUserId(user.id);
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
 
-                    <TransactionsList>
-                         <TransactionItem>
-                              <TransactionIcon className="expense">
-                                   <Icons.RedRightIcon />
-                              </TransactionIcon>
+  async function GetTransactions(id) {
+    notify("loading", "Ma'lumotlar yuklanmoqda...");
+    try {
+      const dokonRes = await Axios.get(`${api}/${id}/dokon`);
+      const dokonList = Array.isArray(dokonRes.data) ? dokonRes.data : [dokonRes.data];
+      const mahsulotlar = dokonList[0]?.mahsulotlar || [];
+      const onlyTx = mahsulotlar.filter((item) => item?.itemType === "transaction");
+      const sorted = onlyTx.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setTransactions(sorted);
 
-                              <TransactionInfo>
-                                   <TransactionTitle>Supermarket</TransactionTitle>
-                                   <TransactionCategory>Ovqat</TransactionCategory>
-                              </TransactionInfo>
+      destroyNotify();
+      notify("success", "Ma'lumotlar yuklandi!");
+    } catch (error) {
+      destroyNotify();
+      notify("error", "Ma'lumotlarni yuklashda xatolik!");
+      console.log(error.message);
+    }
+  }
 
-                              <div>
-                                   <TransactionAmount className="expense">
-                                        -45,000 so'm
-                                   </TransactionAmount>
-                                   <TransactionDate>2026-05-15</TransactionDate>
-                              </div>
-                         </TransactionItem>
 
-                         <TransactionItem>
-                              <TransactionIcon className="income">
-                                   <Icons.GreenbottomIcon />
-                              </TransactionIcon>
+  const totalIncome = transactions
+    .filter((t) => t.type === "income")
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
-                              <TransactionInfo>
-                                   <TransactionTitle>Ish haqi</TransactionTitle>
-                                   <TransactionCategory>Daromad</TransactionCategory>
-                              </TransactionInfo>
+  const totalExpense = transactions
+    .filter((t) => t.type === "expense")
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
-                              <div>
-                                   <TransactionAmount className="income">
-                                        +5,000,000 so'm
-                                   </TransactionAmount>
-                                   <TransactionDate>2026-05-14</TransactionDate>
-                              </div>
-                         </TransactionItem>
+  const balance = totalIncome - totalExpense;
 
-                         <TransactionItem>
-                              <TransactionIcon className="expense">
-                                   <Icons.RedRightIcon />
-                              </TransactionIcon>
+  const categories = transactions
+    .filter((t) => t.type === "expense")
+    .reduce((acc, t) => {
+      const existing = acc.find((c) => c.name === t.category);
+      if (existing) {
+        existing.total += Number(t.amount);
+      } else {
+        acc.push({ name: t.category, total: Number(t.amount) });
+      }
+      return acc;
+    }, []);
 
-                              <TransactionInfo>
-                                   <TransactionTitle>Transport</TransactionTitle>
-                                   <TransactionCategory>Transport</TransactionCategory>
-                              </TransactionInfo>
 
-                              <div>
-                                   <TransactionAmount className="expense">
-                                        -25,000 so'm
-                                   </TransactionAmount>
-                                   <TransactionDate>2026-05-14</TransactionDate>
-                              </div>
-                         </TransactionItem>
+  const recentTransactions = transactions.slice(0, 5);
 
-                         <TransactionItem>
-                              <TransactionIcon className="expense">
-                                   <Icons.RedRightIcon />
-                              </TransactionIcon>
+  function formatDate(isoString) {
+    if (!isoString) return "";
+    return new Date(isoString).toLocaleDateString("uz-UZ", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  }
 
-                              <TransactionInfo>
-                                   <TransactionTitle>Kafe</TransactionTitle>
-                                   <TransactionCategory>Ovqat</TransactionCategory>
-                              </TransactionInfo>
 
-                              <div>
-                                   <TransactionAmount className="expense">
-                                        -60,000 so'm
-                                   </TransactionAmount>
-                                   <TransactionDate>2026-05-13</TransactionDate>
-                              </div>
-                         </TransactionItem>
-                    </TransactionsList>
-               </TransactionsCard>
+  function formatAmount(amount) {
+    return Number(amount).toLocaleString("uz-UZ");
+  }
 
-               <CategoriesCard>
-                    <SectionHeader>
-                         <h3>Kategoriyalar bo'yicha</h3>
-                    </SectionHeader>
+  return (
+    <div style={{ maxHeight: "100vh", height: "100%", overflow: "scroll" }} className="ScrollBar_Dashboard">
+      <Wrapper $dark={isDark}>
+        <Header>
+          <HeaderLeft>
+            <Title $dark={isDark}>Dashboard</Title>
+            <Subtitle $dark={isDark}>Xarajatlaringizni boshqaring</Subtitle>
+          </HeaderLeft>
+          <HeaderRight $dark={isDark}>
+            <Icons.DateIcon />
+            <span>May 2026</span>
+          </HeaderRight>
+        </Header>
 
-                    <GenericProgress  />
+        <CardsGrid>
+          <StatCard $dark={isDark}>
+            <CardTop>
+              <CardLabel $dark={isDark}>Balans</CardLabel>
+              <Icons.smallWalletIcon />
+            </CardTop>
+            <CardValue $dark={isDark}>
+              {formatAmount(balance)} so'm
+            </CardValue>
+            <CardSubText $dark={isDark}>Umumiy balans</CardSubText>
+          </StatCard>
 
-                    {/* <CategoryList>
-                         <CategoryItem>
-                              <CategoryTop>
-                                   <span>Ovqat</span>
-                                   <span>850,000 so'm</span>
-                              </CategoryTop>
+          <StatCard $dark={isDark}>
+            <CardTop>
+              <CardLabel $dark={isDark}>Daromad</CardLabel>
+              <Icons.topGreenIcon />
+            </CardTop>
+            <CardValue $dark={isDark} className="income">
+              {formatAmount(totalIncome)} so'm
+            </CardValue>
+            <CardSubText $dark={isDark}>Ushbu oy</CardSubText>
+          </StatCard>
 
-                              <ProgressWrapper>
-                                   <ProgressBar width="38%" color="#3B82F6" />
-                              </ProgressWrapper>
-                         </CategoryItem>
+          <StatCard $dark={isDark}>
+            <CardTop>
+              <CardLabel $dark={isDark}>Xarajat</CardLabel>
+              <Icons.bottomRedIcon />
+            </CardTop>
+            <CardValue $dark={isDark} className="expense">
+              {formatAmount(totalExpense)} so'm
+            </CardValue>
+            <CardSubText $dark={isDark}>Ushbu oy</CardSubText>
+          </StatCard>
+        </CardsGrid>
 
-                         <CategoryItem>
-                              <CategoryTop>
-                                   <span>Transport</span>
-                                   <span>420,000 so'm</span>
-                              </CategoryTop>
+        <ContentGrid>
+          <TransactionsCard $dark={isDark}>
+            <SectionHeader $dark={isDark}>
+              <h3>So'nggi tranzaksiyalar</h3>
+              <button>Barchasini ko'rish</button>
+            </SectionHeader>
 
-                              <ProgressWrapper>
-                                   <ProgressBar width="20%" color="#22C55E" />
-                              </ProgressWrapper>
-                         </CategoryItem>
+            <TransactionsList>
+              {recentTransactions.map((t) => (
+                <TransactionItem key={t.id}>
+                  <TransactionIcon className={t.type}>
+                    {t.type === "income"
+                      ? <Icons.GreenbottomIcon />
+                      : <Icons.RedRightIcon />}
+                  </TransactionIcon>
+                  <TransactionInfo>
+                    <TransactionTitle $dark={isDark}>{t.description}</TransactionTitle>
+                    <TransactionCategory $dark={isDark}>{t.category}</TransactionCategory>
+                  </TransactionInfo>
+                  <div>
+                    <TransactionAmount className={t.type}>
+                      {t.type === "income" ? "+" : "-"}{formatAmount(t.amount)} so'm
+                    </TransactionAmount>
+                    <TransactionDate $dark={isDark}>{formatDate(t.date)}</TransactionDate>
+                  </div>
+                </TransactionItem>
+              ))}
+            </TransactionsList>
+          </TransactionsCard>
 
-                         <CategoryItem>
-                              <CategoryTop>
-                                   <span>To'lovlar</span>
-                                   <span>650,000 so'm</span>
-                              </CategoryTop>
-
-                              <ProgressWrapper>
-                                   <ProgressBar width="32%" color="#F97316" />
-                              </ProgressWrapper>
-                         </CategoryItem>
-
-                         <CategoryItem>
-                              <CategoryTop>
-                                   <span>O'yin-kulgi</span>
-                                   <span>320,000 so'm</span>
-                              </CategoryTop>
-
-                              <ProgressWrapper>
-                                   <ProgressBar width="15%" color="#A855F7" />
-                              </ProgressWrapper>
-                         </CategoryItem>
-                    </CategoryList> */}
-               </CategoriesCard>
-          </ContentGrid>
-     </Wrapper>
+          <CategoriesCard $dark={isDark}>
+            <SectionHeader $dark={isDark}>
+              <h3>Kategoriyalar bo'yicha</h3>
+            </SectionHeader>
+            <GenericProgress
+              categories={categories}
+              totalExpense={totalExpense}
+            />
+          </CategoriesCard>
+        </ContentGrid>
+      </Wrapper>
+    </div>
+  );
 };
 
 export default Dashboard;

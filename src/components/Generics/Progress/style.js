@@ -1,51 +1,62 @@
 import styled, { keyframes } from 'styled-components';
- 
 
 const fillBar = keyframes`
   from { width: 0%; }
   to   { width: var(--target-width); }
 `;
- 
 
-const Wrapper = styled.div`
+export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 18px;
+  margin-top: 20px;
 `;
- 
-const CategoryItem = styled.div`
+
+export const CategoryItem = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
 `;
- 
-const CategoryHeader = styled.div`
+
+export const CategoryHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
- 
-const CategoryName = styled.span`
+
+export const CategoryName = styled.span`
   font-size: 13px;
   font-weight: 500;
-  color: #1a1a1a;
+  color: ${({ $dark }) => $dark ? "#f0f0f0" : "#1a1a1a"};
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
 `;
- 
-const CategoryAmount = styled.span`
+
+export const CategoryAmount = styled.span`
   font-size: 13px;
   font-weight: 500;
-  color: #555;
+  color: ${({ $dark }) => $dark ? "#aaa" : "#555"};
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
 `;
- 
-const TrackBar = styled.div`
+
+export const TrackBar = styled.div`
   width: 100%;
   height: 8px;
-  background: #efefef;
+  background: ${({ $dark }) => $dark ? "#2a2a45" : "#efefef"};
   border-radius: 99px;
   overflow: hidden;
+
+  @media (max-width: 480px) {
+    height: 6px;
+  }
 `;
- 
-const FillBar = styled.div`
+
+export const FillBar = styled.div`
   height: 100%;
   border-radius: 99px;
   background: ${({ $color }) => $color};
@@ -54,5 +65,3 @@ const FillBar = styled.div`
   animation: ${fillBar} 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
   animation-delay: ${({ $delay }) => $delay}s;
 `;
-
-export {Wrapper, CategoryItem, CategoryHeader, CategoryName, CategoryAmount, TrackBar, FillBar}
