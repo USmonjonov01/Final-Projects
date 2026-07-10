@@ -11,18 +11,22 @@
 
 ;
 
-.wrapper::-webkit-scrollbar, 
+.wrapper::-webkit-scrollbar {
+  display: none;
+}
+
 .ScrollBar::-webkit-scrollbar {
   display: none;
 }
 
-.ScrollBar_Dashboard::-webkit-scrollbar{
+.ScrollBar_Dashboard::-webkit-scrollbar {
   display: none;
 }
 
-.ScrollBar::-webkit-scrollbar{
+.ScrollBar::-webkit-scrollbar {
   display: none;
 }
-.ProfileCard::-webkit-scrollbar{
+
+.ProfileCard::-webkit-scrollbar {
   display: none;
 }
