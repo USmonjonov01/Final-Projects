@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import { ThemeData } from "../../Context/Theme";
 import { useNotification } from "../../Context/Messages";
-import Axios from "../../axios";
+import Axios from "../../Axios";
 
 const api = import.meta.env.VITE_API; 
 
