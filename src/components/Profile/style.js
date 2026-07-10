@@ -17,7 +17,7 @@ import UserIcon from "../../assets/icons/UserIcon.svg?react"
 import CrownIcon from '../../assets/icons/CrownIcon.svg?react'
 import moonIcon from "../../assets/icons/moonIcon.svg?react"
 import moonLightIcon from "../../assets/icons/moonLightIcon.svg?react"
-import NotificationsIcon from "../../assets/icons/NOtificationsIcon.svg?react"
+import NotificationsIcon from "../../assets/icons/NotificationsIcon.svg?react"
 import MailIcon from "../../assets/icons/MailIcon.svg?react"
 
 const fadeUp = keyframes`
