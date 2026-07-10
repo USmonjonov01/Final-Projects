@@ -222,15 +222,21 @@ export const InputWrapper = styled.div`
   margin-bottom: 14px;
 `;
 
-export const InputIcon = styled.span`
+export const InputIcon = styled.div`
   position: absolute;
-  left: 14px;
-  top: 50%;
+  ${({ $position }) => {
+    switch ($position) {
+      case "left":
+        return { left: "14px", top: "50%" }
+      case "right":
+        return { right: "14px", top: "50%" }
+    }
+  }}
   transform: translateY(-50%);
   display: flex;
   align-items: center;
   color: ${({ $dark }) => $dark ? "#666" : colors.iconColor};
-  pointer-events: none;
+  cursor: pointer;
 
   svg {
     width: 17px;
