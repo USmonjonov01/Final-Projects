@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { PageWrapper, PageHeader, PageTitleGroup, PageTitle, PageSub, AddBtn, CardsGrid, CategoryCard, CardTop, IconCircle, CardPercent, CardName, CardTxCount, CardAmount, ProgressBar, ProgressFill, SummaryCard, SummaryTitle, SummaryRow, SummaryIconCircle, SummaryInfo, SummaryName, SummaryBarWrap, SummaryBarFill, SummaryRight, SummaryAmount, SummaryPercent, ModalOverlay, ModalBox, ModalHeader, ModalTitle, ModalCloseBtn, ModalLabel, ModalInput, IconGrid, IconBtn, ColorGrid, ColorBtn, ModalFooter, CancelBtn, SubmitBtn, } from "./style";
 import { ThemeData } from "../../Context/Theme";
 import { useNotification } from "../../Context/Messages";
-import Axios from "../../axios";
+import Axios from "../../Axios";
 
 const ICONS = ["🛒", "🚗", "🏠", "🎮", "☕", "❤️", "💼", "🎁", "📱", "✈️", "🎓", "💊", "🏋️", "🎵", "🍕", "⚽"];
 

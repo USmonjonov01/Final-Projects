@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Wrapper, CategoryItem, CategoryHeader, CategoryName, CategoryAmount, TrackBar, FillBar } from './style';
 import { ThemeData } from '../../../Context/Theme';
-import Axios from '../../../axios';
+import Axios from '../../../Axios';
 
 const api = import.meta.env.VITE_API; 
 

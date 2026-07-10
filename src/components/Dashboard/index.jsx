@@ -5,7 +5,7 @@ import { StudentListData } from "../../Context/Users";
 import GenericProgress from "../Generics/Progress";
 import { Icons } from "../registration/singIN/style";
 import { Wrapper, Header, HeaderLeft, HeaderRight, Title, Subtitle, CardsGrid, StatCard, CardLabel, CardValue, CardSubText, ContentGrid, TransactionsCard, CategoriesCard, SectionHeader, TransactionsList, TransactionItem, TransactionIcon, TransactionInfo, TransactionTitle, TransactionCategory, TransactionAmount, TransactionDate, CardTop, } from "./style";
-import Axios from "../../axios";
+import Axios from "../../Axiosxios";
 
 const api = import.meta.env.VITE_API;
 

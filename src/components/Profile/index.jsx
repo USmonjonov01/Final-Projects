@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { message } from "antd";
 import { PageWrapper, PageHeader, PageTitle, PageSub, GridLayout, LeftCol, RightCol, Card, CardTitle, ProfileHeaderRow, AvatarWrapper, Avatar, AvatarCameraBtn, ProfileInfo, ProfileName, ProfileEmail, BadgeRow, Badge, FormGrid, FormGroup, Label, Input, PasswordInputWrap, PasswordToggle, PrimaryBtn, SecondaryBtn, PasswordSectionHeader, SectionHeaderText, SectionHeaderTitle, SectionHeaderSub, Divider, ToggleRow, ToggleRowLeft, ToggleRowText, ToggleRowTitle, ToggleRowSub, ToggleBtnPill, Switch, SwitchKnob, StatRow, StatIconBox, StatText, StatLabel, StatValue, ActionRow, ActivityRow, ActivityDot, ActivityText, ActivityTitle, ActivityTime, Icons, } from "./style";
-import Axios from "../../axios";
+import Axios from "../../Axios";
 import { StudentListData } from "../../Context/Users";
 import { useNotification } from "../../Context/Messages";
 import { useNavigate } from "react-router-dom";
