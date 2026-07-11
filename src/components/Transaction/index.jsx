@@ -12,6 +12,7 @@ import {
 import { Icons } from '../registration/singIN/style';
 import { ThemeData } from '../../Context/Theme';
 import { useNotification } from '../../Context/Messages';
+import { Use_Notification } from '../../Context/Notification'; 
 import Axios from '../../Axios';
 
 const api = import.meta.env.VITE_API;
@@ -35,6 +36,7 @@ const EMPTY_FORM = {
 export default function Transactions() {
   const [{ isDark }] = ThemeData();
   const { notify, destroyNotify } = useNotification();
+  const { confirmModal } = Use_Notification(); 
 
   const userData = localStorage.getItem('userData');
 
@@ -64,7 +66,6 @@ export default function Transactions() {
     }
   }
 
-  // ⛔ dokon yozuvini olish, topilmasa yaratish
   async function GetOrCreateDokon(uid) {
     const res = await Axios.get(`${api}/${uid}/dokon`);
     const list = Array.isArray(res.data) ? res.data : [res.data];
@@ -156,24 +157,31 @@ export default function Transactions() {
     }
   }
 
-  // DELETE
-  async function HandleDelete(id) {
-    if (!confirm("Tranzaksiyani o'chirishni tasdiqlaysizmi?")) return;
-    notify('loading', "O'chirilmoqda...");
-    try {
-      const dokon = await GetOrCreateDokon(userId);
-      const updatedMahsulotlar = (dokon.mahsulotlar || []).filter((item) => item.id !== id);
+  function HandleDelete(id) {
+    confirmModal({
+      title: "Tranzaksiyani o'chirish",
+      content: "Tranzaksiyani o'chirishni tasdiqlaysizmi?",
+      okText: "Ha, o'chirish",
+      cancelText: "Bekor qilish",
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        notify('loading', "O'chirilmoqda...");
+        try {
+          const dokon = await GetOrCreateDokon(userId);
+          const updatedMahsulotlar = (dokon.mahsulotlar || []).filter((item) => item.id !== id);
 
-      await Axios.put(`${api}/${userId}/dokon/${dokon.id}`, { ...dokon, mahsulotlar: updatedMahsulotlar });
-      await GetTransactions(userId);
+          await Axios.put(`${api}/${userId}/dokon/${dokon.id}`, { ...dokon, mahsulotlar: updatedMahsulotlar });
+          await GetTransactions(userId);
 
-      destroyNotify();
-      notify('success', "Tranzaksiya o'chirildi!");
-    } catch (error) {
-      destroyNotify();
-      notify('error', "O'chirishda xatolik!");
-      console.log(error.message);
-    }
+          destroyNotify();
+          notify('success', "Tranzaksiya o'chirildi!");
+        } catch (error) {
+          destroyNotify();
+          notify('error', "O'chirishda xatolik!");
+          console.log(error.message);
+        }
+      },
+    });
   }
 
   function OpenAdd() {

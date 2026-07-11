@@ -3,6 +3,7 @@ import { GlobalStyle, PageWrapper, Card, LogoWrapper, Title, Subtitle, Form, Fie
 import { useNavigate } from "react-router-dom";
 import Axios from "../../../Axios";
 import { ThemeData } from "../../../Context/Theme";
+import { Use_Notification } from "../../../Context/Notification";
 
 
 const EyeIcon = () => (
@@ -23,47 +24,54 @@ const SingInForm = () => {
      const EmailRef = useRef()
      const PasswordRef = useRef()
      const navigate = useNavigate()
-     const [formData, setFormData] = useState({
-          email: "",
-          password: "",
-     });
      const [{ isDark }] = ThemeData()
+     const { notifyByStatus, notifyBox } = Use_Notification()
      const [prop, setProp] = useState(false)
      const [type, setType] = useState(false)
-
-
-
-
 
      const handleSubmit = async (e) => {
           e.preventDefault()
           setProp(false)
+
+          const enteredEmail = EmailRef.current.value.trim()
+          const enteredPassword = PasswordRef.current.value
+
+          if (!enteredEmail || !enteredPassword) {
+               setProp(true)
+               notifyBox('error', "Ma'lumot to'liq emas", "Email va parolni kiriting.")
+               return
+          }
+
           try {
                const res = await Axios.get(api)
 
                if (res.status >= 200 && res.status < 300) {
-                    const userdata = localStorage.getItem("userData")
-                    const newRes = res.data;
+                    const users = res.data;
 
-                    return newRes.find((obj) => {
-                         if (!userdata) {
-                              localStorage.setItem("userData", obj.ism)
-                         }
-                         if (obj.ism === userdata) {
-                              const token = localStorage.setItem("token", crypto.randomUUID())
-                              navigate("/dashboard")
-                         } else {
-                              setProp(true)
-                              alert("malutmotlar mos kelmadi")
-                         }
-                    })
+                    const matchedUser = users.find(
+                         (obj) => obj.email === enteredEmail && obj.parol === enteredPassword
+                    )
+
+                    if (matchedUser) {
+                         localStorage.setItem("userData", matchedUser.ism)
+                         localStorage.setItem("token", crypto.randomUUID())
+                         notifyByStatus(res.status, 'signIn')
+                         navigate("/dashboard")
+                    } else {
+                         setProp(true)
+                         notifyBox('error', 'Kirish amalga oshmadi', "Email yoki parol noto'g'ri.")
+                    }
                }
           } catch (error) {
+               const status = error.response?.status
+               if (status) {
+                    notifyByStatus(status, 'signIn')
+               } else {
+                    notifyBox('error', 'Tarmoq xatosi', "Server bilan bog'lanib bo'lmadi. Internetni tekshiring.")
+               }
                console.log("Xatolik:", error.message)
           }
      }
-
-
 
      return (
           <>

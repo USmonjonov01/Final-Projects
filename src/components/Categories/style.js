@@ -87,6 +87,40 @@ export const CardsGrid = styled.div`
   }
 `;
 
+export const CardActions = styled.div`
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  gap: 6px;
+  margin-top: 10px;
+  opacity: 0;
+  transition: opacity 0.18s;
+  top: 55px;
+  right: 15px;
+`;
+
+export const CardActionBtn = styled.button`
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: #bbb;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+
+  svg { width: 15px; height: 15px; }
+
+  &:hover {
+    background: ${({ $danger }) => $danger ? '#fff0f0' : '#f0f0f0'};
+    color: ${({ $danger }) => $danger ? '#dc2626' : '#555'};
+  }
+`;
+
 export const CategoryCard = styled.div`
   background: ${({ $dark }) => $dark ? "#1a1a2e" : "#fff"};
   border: 1px solid ${({ $dark }) => $dark ? "#2a2a45" : "#f0f0f0"};
@@ -94,6 +128,16 @@ export const CategoryCard = styled.div`
   padding: 20px;
   animation: ${fadeUp} 0.3s ease both;
   animation-delay: ${({ $delay }) => $delay || 0}s;
+  transition: box-shadow 0.18s;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  &:hover ${CardActions} {
+    opacity: 1;
+  }
 
   @media (max-width: 480px) {
     padding: 16px;
@@ -431,3 +475,5 @@ export const SubmitBtn = styled.button`
   &:hover { background: #2a2a45; transform: translateY(-1px); }
   &:active { transform: translateY(0); }
 `;
+
+

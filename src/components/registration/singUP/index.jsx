@@ -3,6 +3,7 @@ import { GlobalStyle, PageWrapper, Card, LogoWrapper, Title, Subtitle, Form, Fie
 import { useNavigate } from "react-router-dom";
 import Axios from "../../../Axios";
 import { ThemeData } from "../../../Context/Theme";
+import { Use_Notification } from "../../../Context/Notification";
 
 
 const UserIcon = () => (
@@ -35,6 +36,7 @@ const EyeOffIcon = () => (
 const SingUpForm = () => {
   const api = import.meta.env.VITE_API;
   const [{ isDark }] = ThemeData()
+  const { notifyByStatus, notifyBox } = Use_Notification()
 
   const NameRef = useRef()
   const EmailRef = useRef()
@@ -47,13 +49,54 @@ const SingUpForm = () => {
 
   const [prop, setProp] = useState(false)
 
+  function validateForm() {
+    const ism = NameRef.current.value.trim()
+    const email = EmailRef.current.value.trim()
+    const password = PasswordRef.current.value
+
+    
+    const ismRegex = /^(?=.*[A-Z])[^\d]{8,}$/
+    if (!ismRegex.test(ism)) {
+      return {
+        title: "Ism noto'g'ri kiritildi",
+        desc: "Ism kamida 8 ta harfdan iborat bo'lishi, kamida 1 ta katta harf bo'lishi va raqam bo'lmasligi kerak.",
+      }
+    }
+
+   
+    const emailRegex = /^(?=.*\d).+@gmail\.com$/
+    if (!emailRegex.test(email)) {
+      return {
+        title: "Email noto'g'ri kiritildi",
+        desc: "Email kamida 1 ta raqam saqlashi va '@gmail.com' bilan tugashi kerak.",
+      }
+    }
+
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/
+    if (!passwordRegex.test(password)) {
+      return {
+        title: "Parol noto'g'ri kiritildi",
+        desc: "Parol kamida 8 ta belgidan iborat bo'lishi, kamida 1 ta katta harf va 1 ta son bo'lishi kerak.",
+      }
+    }
+
+    return null
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (PasswordRef.current.value !== PasswordConfirmRef.current.value) {
       setProp(true)
-      alert("Parollar mos emas!")
+      notifyBox('error', "Parollar mos emas", "Kiritilgan ikkala parol bir xil bo'lishi kerak.")
+      return
+    }
+
+   
+    const validationError = validateForm()
+    if (validationError) {
+      setProp(true)
+      notifyBox('error', validationError.title, validationError.desc)
       return
     }
 
@@ -72,6 +115,8 @@ const SingUpForm = () => {
       const res = await Axios.post(api, data)
 
       if (res.status >= 200 && res.status < 300) {
+        notifyByStatus(res.status, 'signUp')
+
         localStorage.setItem("userData", NameRef.current.value)
         localStorage.setItem("token", crypto.randomUUID())
 
@@ -83,6 +128,12 @@ const SingUpForm = () => {
         navigate("/sign-in")
       }
     } catch (error) {
+      const status = error.response?.status
+      if (status) {
+        notifyByStatus(status, 'signUp')
+      } else {
+        notifyBox('error', 'Tarmoq xatosi', "Server bilan bog'lanib bo'lmadi. Internetni tekshiring.")
+      }
       console.log("Xatolik:", error)
     }
   }

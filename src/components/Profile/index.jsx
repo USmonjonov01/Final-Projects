@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { message } from "antd";
+import { Modal } from "antd"; 
 import { PageWrapper, PageHeader, PageTitle, PageSub, GridLayout, LeftCol, RightCol, Card, CardTitle, ProfileHeaderRow, AvatarWrapper, Avatar, AvatarCameraBtn, ProfileInfo, ProfileName, ProfileEmail, BadgeRow, Badge, FormGrid, FormGroup, Label, Input, PasswordInputWrap, PasswordToggle, PrimaryBtn, SecondaryBtn, PasswordSectionHeader, SectionHeaderText, SectionHeaderTitle, SectionHeaderSub, Divider, ToggleRow, ToggleRowLeft, ToggleRowText, ToggleRowTitle, ToggleRowSub, ToggleBtnPill, Switch, SwitchKnob, StatRow, StatIconBox, StatText, StatLabel, StatValue, ActionRow, ActivityRow, ActivityDot, ActivityText, ActivityTitle, ActivityTime, Icons, } from "./style";
 import Axios from "../../Axios";
 import { StudentListData } from "../../Context/Users";
 import { useNotification } from "../../Context/Messages";
+import { Use_Notification } from "../../Context/Notification"; 
 import { useNavigate } from "react-router-dom";
 import { ThemeData } from "../../Context/Theme";
 
@@ -23,6 +25,9 @@ export default function ProfilePage() {
 
      const [{ loading, List, type }, dispatch] = StudentListData()
      const { notify, destroyNotify } = useNotification()
+     const { notifyBox, confirmModal } = Use_Notification() 
+
+     
 
      const api = import.meta.env.VITE_API
 
@@ -42,6 +47,8 @@ export default function ProfilePage() {
 
      const [stats, setStats] = useState({ totalTransactions: 0, totalExpense: 0, totalIncome: 0 });
 
+     const hasShownEmptyState = useRef(false) 
+
      const NameRef = useRef()
      const EmailRef = useRef()
      const NumberRef = useRef()
@@ -59,7 +66,7 @@ export default function ProfilePage() {
 
           try {
                const res = await Axios.get(api)
-               let newRes = res.data.find((obj) => obj?.ism === userData) // 
+               let newRes = res.data.find((obj) => obj?.ism === userData)
                if (newRes) {
                     setData([newRes])
                     dispatch({ type: "GET", payload: [newRes] })
@@ -76,7 +83,9 @@ export default function ProfilePage() {
                     await GetStatistics(newRes.id)
                     await setId(newRes.id)
                } else {
-                    alert("Ma'lumotlar topilmadi!")
+                    destroyNotify()
+                    
+                    notifyBox('warning', "Ma'lumot topilmadi", "Ushbu hisob uchun profil ma'lumotlari topilmadi. Iltimos qayta kiring.")
                }
 
           } catch (error) {
@@ -108,6 +117,16 @@ export default function ProfilePage() {
                     totalExpense,
                     totalIncome,
                })
+
+               // ⛔ YANGI: yangi/bo'sh hisob uchun bir martalik tushuntiruvchi xabar
+               if (allTransactions.length === 0 && !hasShownEmptyState.current) {
+                    hasShownEmptyState.current = true
+                    notifyBox(
+                         'info',
+                         'Xush kelibsiz!',
+                         "Hozircha sizda hech qanday tranzaksiya yo'q. Boshlash uchun \"Tranzaksiyalar\" sahifasidan xarajat yoki daromad qo'shing."
+                    )
+               }
           } catch (error) {
                console.log("Statistika olishda xato:", error.message)
           }
@@ -124,7 +143,7 @@ export default function ProfilePage() {
                destroyNotify()
 
                notify('success', "Profil muvaffaqiyatli yangilandi!")
-               addActivity("Profil tahrirlandi", "#2563eb", Edit_ID)
+               await addActivity("Profil tahrirlandi", "#2563eb", Edit_ID)
 
                localStorage.setItem("userData", NameRef.current.value)
           } catch (error) {
@@ -146,7 +165,7 @@ export default function ProfilePage() {
           notify('loading', "Parol yangilanmoqda...")
           try {
                if (OldPasswordRef.current.value == password) {
-                    let res = await Axios.put(`${api}/${Edit_ID}`, { "parol": NewPasswordRef.current.value }) // ⛔ password -> parol
+                    let res = await Axios.put(`${api}/${Edit_ID}`, { "parol": NewPasswordRef.current.value, "parol_check": NewPasswordRef.current.value })
                     await GetUserData()
                     dispatch({ type: "PUT", payload: res.data })
                     OldPasswordRef.current.value = ""
@@ -155,7 +174,8 @@ export default function ProfilePage() {
                     destroyNotify()
                     notify('success', "Parol muvaffaqiyatli yangilandi!")
                } else {
-                    alert("Parol xato kiritildi!")
+                    destroyNotify()
+                    notifyBox('error', 'Parol xato', "Eski parol noto'g'ri kiritildi.")
                }
 
           } catch (error) {
@@ -164,27 +184,30 @@ export default function ProfilePage() {
           }
      }
 
-     async function PostActivity(title, color, userId) {
-          try {
-               const currentActivity = Array.isArray(data[0]?.activity) ? data[0].activity : []
-               const newEntry = {
-                    id: crypto.randomUUID(),
-                    title: title,
-                    color: color,
-                    createdAt: new Date().toISOString(),
-               }
-               const updatedActivity = [...currentActivity, newEntry]
 
-               await Axios.put(`${api}/${userId}`, { activity: updatedActivity })
-          } catch (error) {
-               console.log("Activity saqlashda xato:", error.message)
+async function PostActivity(title, color, userId) {
+     try {
+          const freshRes = await Axios.get(`${api}/${userId}`)
+          const currentActivity = Array.isArray(freshRes.data?.activity) ? freshRes.data.activity : []
+
+          const newEntry = {
+               id: crypto.randomUUID(),
+               title: title,
+               color: color,
+               createdAt: new Date().toISOString(),
           }
-     }
+          const updatedActivity = [...currentActivity, newEntry]
 
-     async function addActivity(title, color, userId) {
-          await PostActivity(title, color, userId)
-          await GetUserData()
+          await Axios.put(`${api}/${userId}`, { activity: updatedActivity })
+     } catch (error) {
+          console.log("Activity saqlashda xato:", error.message)
      }
+}
+
+async function addActivity(title, color, userId) {
+     await PostActivity(title, color, userId)
+     await GetUserData()   
+}
 
      function timeAgo(isoString) {
           const now = new Date()
@@ -205,12 +228,18 @@ export default function ProfilePage() {
      }
 
      function LogOut() {
-          if (confirm("Rostanham hisobdan chiqmoqchimisiz?")) {
-               localStorage.removeItem("userData")
-               localStorage.removeItem("token")
-               navigate("/sign-up")
-          }
-          return
+          confirmModal({
+               title: "Hisobdan chiqish",
+               content: "Rostanham hisobdan chiqmoqchimisiz?",
+               okText: "Ha, chiqish",
+               cancelText: "Bekor qilish",
+               okButtonProps: { danger: true },
+               onOk: () => {
+                    localStorage.removeItem("userData")
+                    localStorage.removeItem("token")
+                    navigate("/sign-up")
+               },
+          })
      }
 
      function ScrollToAddress() {
